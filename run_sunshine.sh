@@ -229,7 +229,25 @@ _print_summary() {
     echo ""
     echo -e "  ${BOLD}Panes:${RESET}  xorg-log · i3 · sunshine  +  watchdog (abajo)"
     echo ""
-    echo -e "  ${BOLD}Web UI :${RESET}  ${CYAN}https://localhost:47990${RESET}"
+    # Detect LAN IP and Tailscale IP at runtime
+    local _lan_ip _ts_ip
+    _lan_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '/src/{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
+    _ts_ip=$(ip -4 addr show dev tailscale0 2>/dev/null | awk '/inet /{split($2,a,"/"); print a[1]}')
+    if [[ -n "$_lan_ip" ]]; then
+        echo -e "  ${BOLD}Web UI (LAN)       :${RESET}  ${CYAN}https://${_lan_ip}:47990${RESET}"
+    else
+        echo -e "  ${BOLD}Web UI (LAN)       :${RESET}  ${RED}IP LAN no detectada${RESET}"
+    fi
+    if [[ -n "$_ts_ip" ]]; then
+        echo -e "  ${BOLD}Web UI (Tailscale) :${RESET}  ${CYAN}https://${_ts_ip}:47990${RESET}"
+    else
+        echo -e "  ${BOLD}Web UI (Tailscale) :${RESET}  ${RED}Tailscale no activo${RESET}"
+    fi
+    echo ""
+    echo -e "  ${BOLD}${CYAN}-- Cliente nuevo --${RESET}"
+    echo -e "  ${BOLD}1.${RESET} Abre la Web UI de arriba y crea tu pin de acceso"
+    echo -e "  ${BOLD}2.${RESET} En Moonlight: agrega la IP LAN o Tailscale segun donde estes"
+    echo -e "  ${BOLD}3.${RESET} Ingresa el pin cuando Moonlight lo pida"
     echo -e "  ${BOLD}Ventana:${RESET}  '${BYOBU_WINDOW}' en sesión '${BYOBU_SESSION}'"
     echo -e "  ${BOLD}Ir     :${RESET}  Ctrl+B + W  (lista de ventanas)"
     echo -e "  ${BOLD}Panes  :${RESET}  Ctrl+B + flechas   ·   Zoom: Ctrl+B + Z"
